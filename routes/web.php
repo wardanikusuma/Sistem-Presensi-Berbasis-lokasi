@@ -8,7 +8,9 @@ use App\Http\Controllers\Admin\TrainingLocationController;
 use App\Http\Controllers\Admin\TrainingScheduleController;
 use App\Http\Controllers\Admin\TrainingSessionController;
 use App\Http\Controllers\Athlete\AthleteDashboardController;
+use App\Http\Controllers\Athlete\AthleteProfileController;
 use App\Http\Controllers\Athlete\AttendanceController;
+use App\Http\Controllers\Athlete\ClubController as AthleteClubController;
 use App\Http\Controllers\Athlete\ScheduleController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
@@ -70,8 +72,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance');
         Route::post('/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
         Route::get('/attendances', [AttendanceController::class, 'history'])->name('attendances');
-        Route::view('/history', 'athlete.history')->name('history');
-        Route::view('/profile', 'athlete.profile')->name('profile');
+        Route::get('/clubs', [AthleteClubController::class, 'index'])->name('clubs');
+        Route::get('/profile', [AthleteProfileController::class, 'index'])->name('profile');
     });
 
     Route::middleware('auth')->group(function () {

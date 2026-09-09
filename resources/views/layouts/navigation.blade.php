@@ -41,14 +41,18 @@
                         <x-nav-link :href="route('athlete.dashboard')" :active="request()->routeIs('athlete.dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('athlete.schedules')" :active="request()->routeIs('athlete.schedules')">
-                            {{ __('Jadwal') }}
-                        </x-nav-link>
                         <x-nav-link :href="route('athlete.attendance')" :active="request()->routeIs('athlete.attendance')">
                             {{ __('Presensi') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('athlete.attendances')" :active="request()->routeIs('athlete.attendances')">
-                            {{ __('Riwayat') }}
+                        <x-nav-link :href="route('athlete.schedules')" :active="request()->routeIs('athlete.schedules')">
+                            {{ __('Jadwal Latihan') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('athlete.clubs')" :active="request()->routeIs('athlete.clubs')">
+                            {{ __('Identitas Klub') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('athlete.profile')" :active="request()->routeIs('athlete.profile')">
+                            {{ __('Profil') }}
                         </x-nav-link>
                     @endif
                 </div>
@@ -142,6 +146,16 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('athlete.attendance')" :active="request()->routeIs('athlete.attendance')">
                     {{ __('Presensi') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('athlete.schedules')" :active="request()->routeIs('athlete.schedules')">
+                    {{ __('Jadwal Latihan') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('athlete.clubs')" :active="request()->routeIs('athlete.clubs')">
+                    {{ __('Identitas Klub') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('athlete.profile')" :active="request()->routeIs('athlete.profile')">
+                    {{ __('Profil') }}
                 </x-responsive-nav-link>
             @endif
         </div>

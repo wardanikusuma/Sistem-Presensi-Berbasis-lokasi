@@ -52,20 +52,6 @@
                             <p class="mt-1 text-base font-semibold text-slate-800">{{ $session->start_time }} -
                                 {{ $session->end_time }}</p>
                         </div>
-                        <div class="md:col-span-2">
-                            <p class="text-xs uppercase tracking-wide text-slate-500">Lokasi latihan</p>
-                            <select id="training-location-{{ $session->id }}" data-location-select
-                                class="mt-2 w-full rounded-lg border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                @foreach ($trainingLocations as $location)
-                                    <option value="{{ $location->id }}"
-                                        {{ $location->id === $session->trainingSchedule->trainingLocation->id ? 'selected' : '' }}>
-                                        {{ $location->name }} · {{ $location->address ?? 'Alamat belum diisi' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-slate-500">Pilih lokasi tempat Anda melakukan latihan. GPS akan
-                                diverifikasi terhadap lokasi ini.</p>
-                        </div>
                     </div>
 
                     <div class="mt-6">
@@ -90,8 +76,6 @@
                 button.addEventListener('click', function() {
                     const sessionId = this.getAttribute('data-session-id');
                     const message = this.parentElement.querySelector('.status-message');
-                    const locationSelect = document.getElementById('training-location-' +
-                    sessionId);
 
                     if (!navigator.geolocation) {
                         message.classList.remove('hidden');
@@ -120,11 +104,6 @@
                         sessionInput.value = sessionId;
                         form.appendChild(sessionInput);
 
-                        const locationInput = document.createElement('input');
-                        locationInput.type = 'hidden';
-                        locationInput.name = 'training_location_id';
-                        locationInput.value = locationSelect.value;
-                        form.appendChild(locationInput);
 
                         const lat = document.createElement('input');
                         lat.type = 'hidden';

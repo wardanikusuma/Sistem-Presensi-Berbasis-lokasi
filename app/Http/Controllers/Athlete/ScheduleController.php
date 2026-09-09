@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Athlete;
 
 use App\Http\Controllers\Controller;
-use App\Models\TrainingSession;
+use App\Models\TrainingSchedule;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -14,17 +14,25 @@ class ScheduleController extends Controller
         $athlete = $request->user()->athlete()->with('clubs')->firstOrFail();
         $clubIds = $athlete->clubs()->pluck('clubs.id')->all();
 
-        $sessions = TrainingSession::query()
-            ->with(['trainingSchedule.club', 'trainingSchedule.trainingLocation'])
+        $schedules = TrainingSchedule::query()
+            ->with(['club', 'trainingLocation'])
             ->where('status', 'active')
-            ->whereHas('trainingSchedule', fn ($query) => $query->where('status', 'active'))
-            ->whereHas('trainingSchedule.trainingLocation', fn ($query) => $query->where('status', 'active'))
-            ->whereDate('date', '>=', today())
-            ->orderBy('date')
+            ->whereIn('club_id', $clubIds)
+            ->orderByRaw("CASE day_of_week
+                WHEN 'Senin' THEN 1
+                WHEN 'Selasa' THEN 2
+                WHEN 'Rabu' THEN 3
+                WHEN 'Kamis' THEN 4
+                WHEN 'Jumat' THEN 5
+                WHEN 'Sabtu' THEN 6
+                WHEN 'Minggu' THEN 7
+                ELSE 8 END")
             ->orderBy('start_time')
             ->get()
-            ->filter(fn (TrainingSession $session) => in_array($session->trainingSchedule->club_id, $clubIds, true));
+            ->groupBy('day_of_week');
 
-        return view('athlete.schedules', compact('sessions'));
+        $daysOfWeek = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+
+        return view('athlete.schedules', compact('schedules', 'daysOfWeek'));
     }
 }

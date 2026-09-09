@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Athlete;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\TrainingSchedule;
 use App\Models\TrainingSession;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -16,8 +17,10 @@ class AthleteDashboardController extends Controller
         $athlete = $user->athlete()->with('clubs')->first();
 
         $clubs = $athlete?->clubs ?? collect();
+        $clubIds = $athlete ? $athlete->clubs()->pluck('clubs.id')->all() : [];
 
-        $validSessions = TrainingSession::query()
+        // Today's sessions for athlete's clubs
+        $todaySessions = TrainingSession::query()
             ->with(['trainingSchedule.club', 'trainingSchedule.trainingLocation'])
             ->where('status', 'active')
             ->whereDate('date', today())
@@ -27,17 +30,13 @@ class AthleteDashboardController extends Controller
             ->whereHas('trainingSchedule.trainingLocation', function ($query) {
                 $query->where('status', 'active');
             })
+            ->orderBy('start_time')
             ->get()
-            ->filter(function (TrainingSession $session) use ($athlete) {
-                if (! $athlete) {
-                    return false;
-                }
-
-                $clubIds = $athlete->clubs()->pluck('clubs.id')->all();
-
+            ->filter(function (TrainingSession $session) use ($clubIds) {
                 return in_array($session->trainingSchedule->club_id, $clubIds, true);
             });
 
+        // Upcoming sessions
         $upcomingSessions = TrainingSession::query()
             ->with(['trainingSchedule.club', 'trainingSchedule.trainingLocation'])
             ->where('status', 'active')
@@ -48,16 +47,51 @@ class AthleteDashboardController extends Controller
             ->orderBy('start_time')
             ->limit(5)
             ->get()
-            ->filter(function (TrainingSession $session) use ($athlete) {
-                if (! $athlete) {
-                    return false;
-                }
-
-                $clubIds = $athlete->clubs()->pluck('clubs.id')->all();
-
+            ->filter(function (TrainingSession $session) use ($clubIds) {
                 return in_array($session->trainingSchedule->club_id, $clubIds, true);
             });
 
+        // Attendance stats
+        $totalHadir = Attendance::query()
+            ->where('athlete_id', $athlete?->id ?? 0)
+            ->where('attendance_status', 'hadir')
+            ->count();
+
+        $totalIzin = Attendance::query()
+            ->where('athlete_id', $athlete?->id ?? 0)
+            ->where('attendance_status', 'izin')
+            ->count();
+
+        // Alpha = total past sessions (for athlete's clubs) minus attendance records
+        $totalPastSessions = TrainingSession::query()
+            ->where('status', 'active')
+            ->whereDate('date', '<', today())
+            ->whereHas('trainingSchedule', function ($query) use ($clubIds) {
+                $query->where('status', 'active')
+                    ->whereIn('club_id', $clubIds);
+            })
+            ->count();
+
+        // Also count today's sessions that have already ended
+        $todayEndedSessions = TrainingSession::query()
+            ->where('status', 'active')
+            ->whereDate('date', today())
+            ->where('end_time', '<', now()->format('H:i:s'))
+            ->whereHas('trainingSchedule', function ($query) use ($clubIds) {
+                $query->where('status', 'active')
+                    ->whereIn('club_id', $clubIds);
+            })
+            ->count();
+
+        $totalShouldAttend = $totalPastSessions + $todayEndedSessions;
+        $totalAttendanceRecords = Attendance::query()
+            ->where('athlete_id', $athlete?->id ?? 0)
+            ->whereIn('attendance_status', ['hadir', 'izin'])
+            ->count();
+
+        $totalAlpha = max(0, $totalShouldAttend - $totalAttendanceRecords);
+
+        // Recent attendances
         $recentAttendances = Attendance::query()
             ->with(['trainingSession.trainingSchedule.club', 'trainingLocation'])
             ->where('athlete_id', $athlete?->id ?? 0)
@@ -65,6 +99,15 @@ class AthleteDashboardController extends Controller
             ->limit(5)
             ->get();
 
-        return view('athlete.dashboard', compact('athlete', 'clubs', 'validSessions', 'upcomingSessions', 'recentAttendances'));
+        return view('athlete.dashboard', compact(
+            'athlete',
+            'clubs',
+            'todaySessions',
+            'upcomingSessions',
+            'recentAttendances',
+            'totalHadir',
+            'totalAlpha',
+            'totalIzin',
+        ));
     }
 }

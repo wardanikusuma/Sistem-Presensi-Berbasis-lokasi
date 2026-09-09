@@ -32,7 +32,13 @@
                                 {{ $attendance->trainingSession->trainingSchedule->activity_type ?? '-' }}</td>
                             <td class="px-4 py-3 text-slate-700">
                                 {{ \Carbon\Carbon::parse($attendance->check_in_at)->translatedFormat('H:i') }}</td>
-                            <td class="px-4 py-3 text-slate-700">{{ $attendance->trainingLocation?->name ?? '-' }}</td>
+                            <td class="px-4 py-3 text-slate-700">
+                                @if($attendance->location_status === 'sesuai')
+                                    {{ $attendance->trainingLocation?->name ?? '-' }}
+                                @else
+                                    {{ $attendance->latitude }}, {{ $attendance->longitude }}
+                                @endif
+                            </td>
                             <td class="px-4 py-3 text-slate-700">
                                 {{ number_format((float) $attendance->distance_from_location, 2) }} m</td>
                             <td class="px-4 py-3 text-slate-700">

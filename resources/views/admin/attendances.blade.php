@@ -78,7 +78,12 @@
                                 {{ $attendance->check_in_at ? $attendance->check_in_at->translatedFormat('H:i') : '-' }}
                             </td>
                             <td class="px-4 py-3 text-slate-700">
-                                {{ $attendance->trainingLocation?->name ?? '-' }}</td>
+                                @if($attendance->location_status === 'sesuai')
+                                    {{ $attendance->trainingLocation?->name ?? '-' }}
+                                @else
+                                    {{ $attendance->latitude }}, {{ $attendance->longitude }}
+                                @endif
+                            </td>
                             <td class="px-4 py-3 text-slate-700">
                                 {{ $attendance->distance_from_location !== null ? number_format((float) $attendance->distance_from_location, 2) . ' m' : '-' }}
                             </td>

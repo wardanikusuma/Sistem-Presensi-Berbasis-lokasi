@@ -20,11 +20,6 @@ class AttendanceController extends Controller
     public function index(Request $request): View
     {
         $athlete = $request->user()->athlete()->with('clubs')->firstOrFail();
-        $trainingLocations = TrainingLocation::query()
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
-
         $sessions = TrainingSession::query()
             ->with(['trainingSchedule.club', 'trainingSchedule.trainingLocation'])
             ->where('status', 'active')
@@ -38,7 +33,7 @@ class AttendanceController extends Controller
                 return in_array($session->trainingSchedule->club_id, $clubIds, true);
             });
 
-        return view('athlete.attendance', compact('sessions', 'athlete', 'trainingLocations'));
+        return view('athlete.attendance', compact('sessions', 'athlete'));
     }
 
     public function store(AthleteAttendanceStoreRequest $request): RedirectResponse
